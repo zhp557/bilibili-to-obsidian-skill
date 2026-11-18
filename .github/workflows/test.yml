@@ -1,0 +1,90 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.9", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: 安装
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: 语法编译
+        run: python -m compileall -q src tests
+
+      - name: 离线测试（含仓库卫生守卫）
+        run: python tests/test_common.py
+
+      - name: 确认凭据类文件没被跟踪
+        shell: bash
+        run: |
+          set -e
+          # .env.example 是模板，必须保留；其余 .env* 一律不该进来
+          banned=$(git ls-files \
+                   | grep -v '^\.env\.example$' \
+                   | grep -Ei '(^|/)(cookies[^/]*\.json|\.env|\.env\..*|\.credentials\.yaml|.*\.pyc|.*\.bak)$' \
+                   || true)
+          if [ -n "$banned" ]; then
+            echo "::error::下列文件不该被提交："
+            echo "$banned"
+            exit 1
+          fi
+          echo "OK：没有凭据/缓存/备份文件被跟踪"
+
+      - name: 确认 private/ 只有说明文件
+        shell: bash
+        run: |
+          set -e
+          extra=$(git ls-files private/ | grep -v '^private/README\.md$' || true)
+          if [ -n "$extra" ]; then
+            echo "::error::private/ 里只应有 README.md，实际还有："
+            echo "$extra"
+            exit 1
+          fi
+          echo "OK：private/ 只提交了说明文件"
+
+      - name: CLI 可用性冒烟
+        run: python -m bili_notes.cli help
+
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 检查文档里的相对链接都能打开
+        shell: bash
+        run: |
+          set -e
+          fail=0
+          for f in $(git ls-files '*.md'); do
+            dir=$(dirname "$f")
+            # 抓 [文字](路径) 里的相对路径，跳过 http(s) / 锚点 / 邮件
+            grep -oP '\]\(\K[^)]+(?=\))' "$f" 2>/dev/null | while read -r link; do
+              case "$link" in
+                http*|"#"*|mailto:*|\<*) continue ;;
+              esac
+              target="$dir/${link%%#*}"
+              if [ ! -e "$target" ]; then
+                echo "::error file=$f::链接指向不存在的文件：$link"
+                exit 1
+              fi
+            done || fail=1
+          done
+          echo "文档链接检查完成"
