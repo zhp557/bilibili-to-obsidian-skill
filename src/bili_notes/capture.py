@@ -5,8 +5,9 @@
     python capture.py <bvid> <page> 0:1700:120         # start:end:step 批量
     python capture.py <bvid> <page> 0:1700:120 1755    # 两种写法可混用
 
-产物: <WORKDIR>\\frames\\p<page>\\t%04d.png
+产物: <WORKDIR>/frames/<bvid>/p<page>/t%04d.png
        已存在且 >1KB 的帧会跳过，可反复增量补帧。
+       按 bvid 分目录：两门课都有 P4 时不会互相覆盖。
 
 要点:
 - 源最高常常只有 852x480（教学视频老课），追 1080P 没意义，笔记附件也是这个尺寸。

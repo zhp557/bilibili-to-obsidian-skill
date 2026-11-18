@@ -1,7 +1,7 @@
 """把某个分 P 的帧拼成联系表，一眼看全集结构。
 
 用法:
-    python contact.py p4                 # -> <WORKDIR>/contact_p4.png
+    python contact.py p4                 # -> <WORKDIR>/contact_<BV>_p4.png
     python contact.py 4                  # 等价写法
     python contact.py p1 p2 p4           # 一次拼多张
     python contact.py --bvid BVxxx p4    # 多个视频都有 P4 时必须指定

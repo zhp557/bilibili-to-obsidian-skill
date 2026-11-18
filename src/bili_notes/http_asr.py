@@ -1,9 +1,9 @@
 """云端 ASR（HTTP 版）：千问百炼原生 multimodal-generation 接口。
 
-优先级（本 skill 的文本获取三档）：
-    1. B 站 AI 字幕        subs.py        —— 37 分钟一集约 3 秒，最省
-    2. 云端 ASR（本脚本）  http_asr.py    —— 37 分钟一集约 3~5 分钟，要额度，带标点
-    4. 本地 whisper        asr.py         —— 断网兜底，需要 Python 3.12 venv
+优先级（文本获取三档）：
+    1. B 站 AI 字幕        subs.py        —— 一集几秒，最省，但通常要登录 cookie
+    2. 云端 ASR（本脚本）  http_asr.py    —— 带标点，按段串行，一集约 3 分钟，要额度
+    3. 本地 whisper        asr.py         —— 断网兜底，6~10 分钟，需要 faster-whisper
 
 为什么用这条路径（2026-10 实测）：
     POST /api/v1/services/aigc/multimodal-generation/generation
