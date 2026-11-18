@@ -2,7 +2,7 @@
 
 把 B 站课程视频变成**可复习的结构化笔记**：字幕几秒拿完，没字幕就走云端 ASR，板书按时间点截帧贴进笔记，最后跑一遍验收脚本确认没有裂图、断链和漏讲。
 
-写给两类人用：想整理网课笔记的人，和想把这套流程接给 AI agent 的人（`skills/SKILL.md` 是一份 agent 手册）。
+写给两类人用：想整理网课笔记的人，和想把这套流程接给 AI agent 的人（`skills/bili-course-notes/SKILL.md` 是一份 agent 手册，可以用 `npx skills` 一条命令装进 Claude Code / Cursor 等支持 skills 规范的 agent）。
 
 ## 为什么不是「下载视频再转写」
 
@@ -24,14 +24,33 @@
 
 ## 快速开始
 
+### 装成 agent skill（一条命令）
+
+```bash
+npx skills add <你的GitHub用户名>/bili-notes --skill bili-course-notes
+```
+
+支持任意兼容 skills 规范的 agent（Claude Code、Cursor、OpenCode 等）。
+这条命令只装**文档**——skill 里写的都是 `bili-notes` 命令，还得把 CLI 装上：
+
+### 装 CLI
+
 ```bash
 git clone <你的仓库地址>   # 发布前替换成本仓库实际 URL
 cd bili-notes
 pip install -e .            # 只需要 Pillow；本地 whisper 是可选依赖
 ```
 
+截帧需要 **ffmpeg** 在 PATH 里（Windows 可以 `winget install Gyan.FFmpeg`）：
+
+```bash
+ffmpeg -version      # 有输出就行
+```
+
+两个都装完，`bili-notes probe BV号` 就能跑了。只用 CLI 不想装 skill 的话，跳过第一步即可。
+
 > 先说明边界：本工具到「拿到文本 + 截好图 + 验收」为止，**不生成最终 Markdown**。
-> 把文本整理成笔记是人工步骤，或者交给能读文本的 agent。`skills/SKILL.md` 是给 agent 的那份手册。
+> 把文本整理成笔记是人工步骤，或者交给能读文本的 agent。`skills/bili-course-notes/SKILL.md` 是给 agent 的那份手册。
 
 ### 只用字幕路线（不需要 API key）
 
@@ -132,7 +151,9 @@ bili-notes verify "notes/第03讲 标题.md" "attachments/p04-章节名"
 bili-notes/
 ├── src/bili_notes/          核心脚本（每个都能单独 python xxx.py 跑）
 │   └── extras/              Obsidian 批注工具（可选）
-├── skills/SKILL.md          给 AI agent 的操作手册
+├── skills/
+│   └── bili-course-notes/
+│       └── SKILL.md         给 AI agent 的操作手册（npx skills 可识别）
 ├── docs/
 │   ├── pitfalls.md          18 条实测坑
 │   ├── asr-dead-ends.md     云端 ASR 的 8 条死路

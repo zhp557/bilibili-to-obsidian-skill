@@ -140,7 +140,7 @@ bili-notes verify --dir "<笔记目录>" --att "<附件根目录>"
 
 ## 坑
 
-完整 18 条在 [`docs/pitfalls.md`](../docs/pitfalls.md)。最容易中招的四条：
+完整 18 条在 [`docs/pitfalls.md`](../../docs/pitfalls.md)。最容易中招的四条：
 
 1. 匿名请求只给 480P，带 cookie 才给 720P —— 板书想看清先确认 cookie。
 2. AI 字幕稳定听错专业词与数值（`5/8` → `5%`）—— 结构按字幕，数值看截图。
