@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bili-course-notes"
+version = "0.1.0"
+description = "把 B 站课程视频变成可复习的结构化笔记：AI 字幕优先、云端 ASR 兜底、板书截帧、自动验收"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "YG" }]
+keywords = ["bilibili", "subtitle", "asr", "obsidian", "notes", "whisper"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Education",
+]
+dependencies = ["Pillow>=9.0"]
+
+[project.optional-dependencies]
+# 本地离线 ASR（asr.py）。faster-whisper 需要 Python 3.9~3.12
+whisper = ["faster-whisper>=1.0", "numpy"]
+
+[project.scripts]
+bili-notes = "bili_notes.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+bili_notes = ["extras/*.py"]

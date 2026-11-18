@@ -1,0 +1,46 @@
+# ---- 凭据：任何情况下都不入库 ----
+cookies.json
+*cookies*.json
+bili_cookies.json
+.env
+.env.*
+!.env.example
+.credentials.yaml
+*.pem
+*.key
+
+# ---- 中间产物 ----
+work/
+frames/
+subs_BV*/
+cloud_asr/
+bili_audio/
+*.m4s
+*.wav
+*.raw.json
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+
+# ---- 编辑器 / 系统 ----
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ---- 私有扩展：本地自用、永不入库 ----
+# 需要用到不对外提供的脚本（比如依赖特定服务商的流式 ASR）就放这里。
+# 目录内容全部忽略，只有 README 会提交，用来说明这个约定本身。
+private/*
+!private/README.md
+
+# ---- 历史备份（本项目曾把旧版本留在目录里，一律不入库）----
+*.bak
+*.bak-*
+*~
