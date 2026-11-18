@@ -27,7 +27,7 @@
 ### 装成 agent skill（一条命令）
 
 ```bash
-npx skills add <你的GitHub用户名>/bili-notes --skill bili-course-notes
+npx skills add zhp557/bilibili-to-obsidian-skill --skill bili-course-notes
 ```
 
 支持任意兼容 skills 规范的 agent（Claude Code、Cursor、OpenCode 等）。
@@ -36,8 +36,8 @@ npx skills add <你的GitHub用户名>/bili-notes --skill bili-course-notes
 ### 装 CLI
 
 ```bash
-git clone <你的仓库地址>   # 发布前替换成本仓库实际 URL
-cd bili-notes
+git clone https://github.com/zhp557/bilibili-to-obsidian-skill.git
+cd bilibili-to-obsidian-skill
 pip install -e .            # 只需要 Pillow；本地 whisper 是可选依赖
 ```
 
