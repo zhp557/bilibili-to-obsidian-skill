@@ -1,12 +1,10 @@
 # bili-notes
 
-把 B 站课程视频变成**可复习的结构化笔记**：字幕几秒拿完，没字幕就走云端 ASR，板书按时间点截帧贴进笔记，最后跑一遍验收脚本确认没有裂图、断链和漏讲。
+整理 B 站网课笔记用的小工具。可以下载字幕、按时间点截板书，也可以检查写好的 Obsidian 笔记有没有缺图或断链。没有字幕时，可以用音频转写（ASR）。
 
-写给两类人用：想整理网课笔记的人，和想把这套流程接给 AI agent 的人（`skills/bili-course-notes/SKILL.md` 是一份 agent 手册，可以用 `npx skills` 一条命令装进 Claude Code / Cursor 等支持 skills 规范的 agent）。
+## 字幕还是转写？
 
-## 为什么不是「下载视频再转写」
-
-实测一集 34 分钟的课，三条路线的耗时差一个数量级：
+下面是一集 34 分钟课程的耗时参考，实际速度受网络和设备影响。
 
 | 路线 | 手段 | 34 分钟一集（单次样本） | 产物质量 |
 |---|---|---|---|
@@ -14,24 +12,21 @@
 | 2 | 云端 ASR · HTTP（`http-asr`） | 约 3 分钟（19 段串行，每段约 9 秒） | `[mm:ss]` 整段，**带标点**，接近逐字稿 |
 | 3 | 本地 whisper（`asr`） | 6~10 分钟 | 同音错字更多 |
 
-结论很简单：**先扫字幕，没有字幕再花钱**。`subs` 扫一集只要一次接口调用，绝大多数教学视频都带 `ai-zh` 字幕。
+先用 `subs scan` 看有没有字幕。能用字幕就不用转写；没有字幕时，再选云端或本地转写。
 
 > 这里只有一条云端路线。还有一种「WebSocket 流式」的做法能显示实时进度，但它依赖
 > `qwen3-asr-flash-realtime` 这类只在特定服务商提供的模型，不是所有人都能复现，所以没有收进来。
 > 需要的话按 `docs/asr-dead-ends.md` 的协议说明自己接。
 
-同一条开场，字幕版会被切成好几片（`各位同学` / `我们接着讲下一个概念` / `第二部分`），而云端 ASR 输出的是一整句带标点的话——内容一样，可读性差一个量级。所以**字幕优先不是因为快，是因为够用**。
-
 ## 快速开始
 
-### 装成 agent skill（一条命令）
+### 安装 Skill（可选）
 
 ```bash
 npx skills add zhp557/bilibili-to-obsidian-skill --skill bili-course-notes
 ```
 
-支持任意兼容 skills 规范的 agent（Claude Code、Cursor、OpenCode 等）。
-这条命令只装**文档**——skill 里写的都是 `bili-notes` 命令，还得把 CLI 装上：
+这条命令只安装 Skill。要运行 `bili-notes`，还需要安装下面的 CLI。
 
 ### 装 CLI
 
@@ -47,10 +42,7 @@ pip install -e .            # 只需要 Pillow；本地 whisper 是可选依赖
 ffmpeg -version      # 有输出就行
 ```
 
-两个都装完，`bili-notes probe BV号` 就能跑了。只用 CLI 不想装 skill 的话，跳过第一步即可。
-
-> 先说明边界：本工具到「拿到文本 + 截好图 + 验收」为止，**不生成最终 Markdown**。
-> 把文本整理成笔记是人工步骤，或者交给能读文本的 agent。`skills/bili-course-notes/SKILL.md` 是给 agent 的那份手册。
+装好 CLI 后，可以先运行 `bili-notes probe BV号` 看视频分 P。CLI 负责拿文本、截帧和检查笔记；最终的 Markdown 由你自己整理，也可以交给 Agent。
 
 ### 只用字幕路线（不需要 API key）
 
@@ -60,7 +52,7 @@ bili-notes subs    scan  BV1xxxxxxxxx  # 扫哪些集有 AI 字幕
 bili-notes subs    fetch BV1xxxxxxxxx  # 下载，产物在 work/subs_BV.../pNNN.txt
 ```
 
-产物格式是 `[mm:ss] 内容`，可以直接读、也可以喂给任何模型整理成笔记。
+字幕保存为带时间戳的文本，每行格式是 `[mm:ss] 内容`。
 
 > **但这条路通常需要登录 cookie。** 实测匿名调用 `subs scan` 会返回 `with_sub=0` ——
 > `ai-zh` 字幕列表只在登录态下返回。cookie 免费，浏览器里就有，也不需要 API key。
@@ -76,7 +68,7 @@ bili-notes contact p4                          # 拼成一张联系表，先看�
 bili-notes shots   4 "<附件目录>" "0:01-本讲标题.png" "120:02-例题1.png"
 ```
 
-**先粗扫再精挑**：一集 34 分钟、120 秒一帧约 17 张，一张联系表就能划出「开场 / 例题 / 解答 / 下一题」，再只为这些节点挑 8~12 张。不必每 30 秒都截。
+34 分钟的课，每 120 秒取一帧，大约有 17 张图。先看联系表，找到例题和解答的位置，再按需要补截。
 
 产物按视频隔离：`work/frames/<BV号>/p4/t0000.png`。这样两门课都有 P4 时不会互相覆盖。
 
@@ -88,8 +80,7 @@ bili-notes http-asr BV1xxxxxxxxx 4 --seconds 180   # 先转 3 分钟看效果
 bili-notes http-asr BV1xxxxxxxxx 4                 # 满意了再跑整集
 ```
 
-默认端点打阿里云百炼（DashScope）的 `multimodal-generation` 接口；换成别的网关时改 `ASR_HTTP_ENDPOINT`，
-并使用该网关自己的 key（见 `docs/asr-dead-ends.md`——那里记了 8 条走不通的路，别重走）。
+默认使用阿里云百炼（DashScope）的 `multimodal-generation` 接口。换网关时，设置 `ASR_HTTP_ENDPOINT` 并填该网关的 key。接口兼容性见 [ASR 接口记录](docs/asr-dead-ends.md)。
 
 ### 写完笔记跑验收
 
@@ -136,9 +127,9 @@ bili-notes verify "notes/第03讲 标题.md" "attachments/p04-章节名"
 | `BILI_NOTES_HTTP` | `auto` | `urllib` 优先，被风控（-352）时自动回退 `curl` |
 | `ASR_API_KEY` | 空 | 云端 ASR 的 key；默认端点下也认 `DASHSCOPE_API_KEY` |
 
-## 已知坑（都是踩出来的）
+## 常见问题
 
-完整版共 18 条在 [`docs/pitfalls.md`](docs/pitfalls.md)，这里挑四个最容易中招的：
+更多排查记录见 [`docs/pitfalls.md`](docs/pitfalls.md)。
 
 1. **匿名请求拿不到高清晰度**。同一个分 P，匿名只给 `852x480`，带上登录 cookie 才给 `1280x720`。板书想看清，先确认 cookie 有效。
 2. **AI 字幕会把专业词和数值听错**。实测把「加奇减偶」听成「夹击减偶」、「5/8」听成「5%」、「0.25%」听成「0.54%」。规矩：**结构、话术按字幕写，具体数值一律看截图**，读不准就写「以截图为准」。
