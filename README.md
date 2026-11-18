@@ -6,9 +6,9 @@
 
 ## 为什么不是「下载视频再转写」
 
-实测一集 37 分钟的课，四条路线的耗时差一个数量级：
+实测一集 34 分钟的课，三条路线的耗时差一个数量级：
 
-| 路线 | 手段 | 37 分钟一集实测 | 产物质量 |
+| 路线 | 手段 | 34 分钟一集（单次样本） | 产物质量 |
 |---|---|---|---|
 | 1 | **B 站 AI 字幕**（`subs`） | **约 3 秒** | `[mm:ss]` 短句，结构可信，数值要查板书 |
 | 2 | 云端 ASR · HTTP（`http-asr`） | 约 3 分钟（19 段串行，每段约 9 秒） | `[mm:ss]` 整段，**带标点**，接近逐字稿 |
@@ -102,7 +102,7 @@ bili-notes verify "notes/第03讲 标题.md" "attachments/p04-章节名"
 | `shots` | 按「秒:文件名」把帧复制成附件，`--dry` 先预演 |
 | `verify` | 笔记验收 |
 
-`src/bili_notes/extras/` 里还有一套 Obsidian 批注工具（`boxes` / `boards` / `collect-notes`），需要笔记里先有批注框，可选。
+`src/bili_notes/extras/` 里还有一套 Obsidian 批注工具：`boxes`（加框）、`flatten-boxes` / `convert-boxes`（旧格式迁移）、`boards`（重建看板）、`collect-notes`（汇总欠账）。需要笔记里先有批注框，可选。
 
 ## 配置
 
@@ -113,7 +113,7 @@ bili-notes verify "notes/第03讲 标题.md" "attachments/p04-章节名"
 | `BILI_NOTES_WORKDIR` | `./work` | 字幕、帧、音频等中间产物 |
 | `BILI_NOTES_VAULT` | 空 | Obsidian vault 路径；核心 CLI 不使用，下游脚本可读取 |
 | `BILI_NOTES_COOKIE` | `<WORKDIR>/cookies.json` | B 站 cookie |
-| `BILI_NOTES_FFMPEG` | 从 PATH 找 | 只有在 `asr` 和音频转码时需要 |
+| `BILI_NOTES_FFMPEG` | 从 PATH 找 | **截帧（capture）和本地 ASR 都需要**。不设就从 PATH 里找 ffmpeg |
 | `BILI_NOTES_HTTP` | `auto` | `urllib` 优先，被风控（-352）时自动回退 `curl` |
 | `ASR_API_KEY` | 空 | 云端 ASR 的 key；默认端点下也认 `DASHSCOPE_API_KEY` |
 
@@ -134,11 +134,11 @@ bili-notes/
 │   └── extras/              Obsidian 批注工具（可选）
 ├── skills/SKILL.md          给 AI agent 的操作手册
 ├── docs/
-│   ├── pitfalls.md          16 条实测坑
+│   ├── pitfalls.md          18 条实测坑
 │   ├── asr-dead-ends.md     云端 ASR 的 8 条死路
 │   └── cookies.md           怎么拿 B 站 cookie（只存本地）
 ├── examples/output-sample.md 产出长什么样
-└── tests/                   解析逻辑的离线测试
+└── tests/                   离线测试 + 仓库卫生守卫（11 项，不联网）
 ```
 
 ## 合规与边界
